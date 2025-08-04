@@ -42,16 +42,31 @@
       const cancelBtn = document.getElementById("cancel-edit");
       let editingId = null;
 
-      // Show notification toast
-      function showToast(message, duration = 3000) {
-        const toast = document.getElementById("toast");
-        toast.textContent = message;
-        toast.classList.add("show");
+    // Show notification toast
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById("toast");
+      const sound = document.getElementById("notif-sound");
 
-        setTimeout(() => {
-          toast.classList.remove("show");
-        }, duration);
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      // Play notification sound
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch((e) => {
+          console.log("Sound play failed:", e);
+        });
       }
+
+      // Mobile vibration
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, duration);
+    }
 
       // Load jobs from localStorage
       function loadJobs() {
@@ -161,5 +176,6 @@
       loadJobs();
     </script>
     <div id="toast" class="toast"></div>
+    <audio id="notif-sound" src="ding.mp3" preload="auto"></audio>
   </body>
 </html> 
