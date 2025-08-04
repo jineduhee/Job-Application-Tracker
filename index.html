@@ -1,0 +1,165 @@
+<!DOCTYPE html> 
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Application Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Job Applications</h1>
+      <ul id="job-list"></ul>
+
+      <h2>Add New Application</h2>
+      <form id="job-form">
+        <input type="text" id="company" placeholder="Company" required /><br />
+        <input type="text" id="position" placeholder="Position" required /><br />
+        <select id="status" required>
+          <option value="">Select Status</option>
+          <option value="Applied">Applied</option>
+          <option value="Interview">Interview</option>
+          <option value="Phone Screen">Phone Screen</option>
+          <option value="Technical Interview">Technical Interview</option>
+          <option value="Final Round">Final Round</option>
+          <option value="Offer">Offer</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Withdrawn">Withdrawn</option>
+          <option value="Accepted">Accepted</option>
+        </select><br />
+        <input type="text" id="notes" placeholder="Notes" /><br />
+        <button type="submit">Add Application</button>
+        <button type="button" id="cancel-edit" style="display: none">
+          Cancel Edit
+        </button>
+      </form>
+    </div>
+
+    <script>
+      // Get DOM elements
+      const jobList = document.getElementById("job-list");
+      const form = document.getElementById("job-form");
+      const cancelBtn = document.getElementById("cancel-edit");
+      let editingId = null;
+
+      // Show notification toast
+      function showToast(message, duration = 3000) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+
+        setTimeout(() => {
+          toast.classList.remove("show");
+        }, duration);
+      }
+
+      // Load jobs from localStorage
+      function loadJobs() {
+        const jobs = JSON.parse(localStorage.getItem('jobApplications') || '[]');
+        jobList.innerHTML = "";
+        
+        jobs.forEach((job, index) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <div class="job-info">
+              <strong>${job.position}</strong> at <strong>${job.company}</strong> – <span class="status">${job.status}</span>
+              ${job.notes ? `<div class="notes">📝 ${job.notes}</div>` : ''}
+            </div>
+            <div class="job-actions">
+              <button onclick="editJob(${job.id}, '${job.company}', '${
+                job.position
+              }', '${job.status}', \`${job.notes || ""}\`)">✏️ Edit</button>
+              <button onclick="deleteJob(${job.id})">❌ Delete</button>
+            </div>
+          `;
+          
+          li.style.animationDelay = `${index * 0.1}s`;
+          jobList.appendChild(li);
+        });
+      }
+
+      // Save jobs to localStorage
+      function saveJobs(jobs) {
+        localStorage.setItem('jobApplications', JSON.stringify(jobs));
+      }
+
+      // Cancel edit mode
+      cancelBtn.addEventListener("click", () => {
+        editingId = null;
+        form.reset();
+        cancelBtn.style.display = "none";
+        showToast("Edit cancelled");
+      });
+
+      // Enter edit mode for a job
+      function editJob(id, company, position, status, notes) {
+        editingId = id;
+        document.getElementById("company").value = company;
+        document.getElementById("position").value = position;
+        document.getElementById("status").value = status;
+        document.getElementById("notes").value = notes;
+        cancelBtn.style.display = "inline-block";
+        
+        form.style.animation = "pulse 0.6s ease-out";
+        setTimeout(() => {
+          form.style.animation = "";
+        }, 600);
+      }
+
+      // Delete a job application
+      function deleteJob(id) {
+        if (!confirm("Delete this application?")) return;
+        
+        const jobs = JSON.parse(localStorage.getItem('jobApplications') || '[]');
+        const updatedJobs = jobs.filter(job => job.id !== id);
+        saveJobs(updatedJobs);
+        
+        showToast("Application deleted!");
+        loadJobs();
+      }
+
+      // Handle form submission
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        
+        const jobData = {
+          company: document.getElementById("company").value,
+          position: document.getElementById("position").value,
+          status: document.getElementById("status").value,
+          notes: document.getElementById("notes").value,
+        };
+
+        const jobs = JSON.parse(localStorage.getItem('jobApplications') || '[]');
+
+        if (editingId) {
+          // Update existing job
+          const jobIndex = jobs.findIndex(job => job.id === editingId);
+          if (jobIndex !== -1) {
+            jobs[jobIndex] = { ...jobs[jobIndex], ...jobData };
+            saveJobs(jobs);
+            showToast("Application updated!");
+            editingId = null;
+          }
+        } else {
+          // Add new job
+          const newJob = {
+            id: Date.now(), // Simple ID generation
+            ...jobData,
+            applied_date: new Date().toISOString()
+          };
+          jobs.push(newJob);
+          saveJobs(jobs);
+          showToast("Application added!");
+        }
+
+        form.reset();
+        cancelBtn.style.display = "none";
+        loadJobs();
+      });
+
+      // Load jobs on page load
+      loadJobs();
+    </script>
+    <div id="toast" class="toast"></div>
+  </body>
+</html> 
