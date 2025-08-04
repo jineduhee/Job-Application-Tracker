@@ -12,7 +12,6 @@ NOTE: I've created this full-stack application that covers front-end and back-en
 - **Full-stack application** with FastAPI backend and SQLite database
 - **Modern UI** with smooth animations and sound effects
 - **CRUD operations** - Create, Read, Update, Delete job applications
-- **AI-powered job extraction** from URLs (requires OpenAI API key)
 - **Responsive design** - works on mobile and desktop
 - **Real-time notifications** with sound and vibration feedback
 - **Status tracking** with predefined dropdown options
